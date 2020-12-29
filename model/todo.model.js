@@ -1,16 +1,12 @@
-const mongoose = require("mongoose");
+module.exports = (sequelize, Sequelize) => {
+  const TodoModel = sequelize.define('todo', {
+    title: {
+      type: Sequelize.STRING
+    },
+    done: {
+      type: Sequelize.BOOLEAN
+    }
+  });
 
-const TodoSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
-  },
-  done: {
-    type: Boolean,
-    required: true
-  }
-});
-
-const TodoModel = mongoose.model("Todo", TodoSchema);
-
-module.exports = TodoModel;
+  return TodoModel;
+};

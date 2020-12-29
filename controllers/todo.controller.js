@@ -1,5 +1,9 @@
-const TodoModel = require("../model/todo.model");
+const db = require('../model');
+//
+// const TodoModel = require('../model/todo.model');
 
+const TodoModel = db.todo;
+const Op = db.Sequelize.Op;
 exports.createTodo = async (req, res, next) => {
   try {
     const createdModel = await TodoModel.create(req.body);
@@ -11,7 +15,7 @@ exports.createTodo = async (req, res, next) => {
 
 exports.getTodos = async (req, res, next) => {
   try {
-    const allTodos = await TodoModel.find({});
+    const allTodos = await TodoModel.findAll({});
     res.status(200).json(allTodos);
   } catch (err) {
     next(err);
@@ -20,7 +24,7 @@ exports.getTodos = async (req, res, next) => {
 
 exports.getTodoById = async (req, res, next) => {
   try {
-    const todoModel = await TodoModel.findById(req.params.todoId);
+    const todoModel = await TodoModel.findByPk(req.params.todoId);
     if (todoModel) {
       res.status(200).json(todoModel);
     } else {
@@ -33,14 +37,9 @@ exports.getTodoById = async (req, res, next) => {
 
 exports.updateTodo = async (req, res, next) => {
   try {
-    const updatedTodo = await TodoModel.findByIdAndUpdate(
-      req.params.todoId,
-      req.body,
-      {
-        new: true,
-        useFindAndModify: false
-      }
-    );
+    const updatedTodo = await TodoModel.update(req.body, {
+      where: { id: req.params.todoId }
+    });
     if (updatedTodo) {
       res.status(200).json(updatedTodo);
     } else {
@@ -53,7 +52,9 @@ exports.updateTodo = async (req, res, next) => {
 
 exports.deleteTodo = async (req, res, next) => {
   try {
-    const deletedTodo = await TodoModel.findByIdAndDelete(req.params.todoId);
+    const deletedTodo = await TodoModel.destroy({
+      where: { id: req.params.todoId }
+    });
 
     if (deletedTodo) {
       res.status(200).json(deletedTodo);
