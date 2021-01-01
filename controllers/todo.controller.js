@@ -1,4 +1,7 @@
+const { OAuth2Client } = require('google-auth-library');
+const asyncHandler = require('../middleware/async');
 const db = require('../model');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 //
 // const TodoModel = require('../model/todo.model');
 
@@ -65,3 +68,42 @@ exports.deleteTodo = async (req, res, next) => {
     next(err);
   }
 };
+exports.getMe = asyncHandler(async (req, res, next) => {
+  console.log('coming here');
+  console.log(req.body.token);
+  let ticket;
+  let token = req.body.token;
+
+  console.log(process.env.GOOGLE_CLIENT_ID);
+  try {
+    // tuan = await client.getAccessToken();
+    // console.log(tuan, 'taaas');
+
+    ticket = await client.verifyIdToken({
+      idToken: req.body.token,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+  } catch (err) {
+    console.log(err);
+    console.log(err.message);
+  }
+  console.log(ticket, 'tickerrrrrrrrr');
+  const payload = ticket.getPayload();
+  console.log(payload);
+  if (!payload) {
+    return next(new ErrorResponse('Not authorize to access this route', 401));
+  }
+  try {
+    //Verify token
+    req.user = payload;
+    console.log('try success');
+    return res.status(200).json({
+      status: true,
+      user: req.user
+    });
+  } catch (err) {
+    console.log(err);
+    console.log(err.message);
+    return next(new ErrorResponse('Not authorize to access this route', 401));
+  }
+});
