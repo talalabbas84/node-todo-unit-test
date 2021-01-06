@@ -2,6 +2,7 @@ const { OAuth2Client } = require('google-auth-library');
 const asyncHandler = require('../middleware/async');
 const db = require('../model');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const io = require('../middleware/socket.js');
 //
 // const TodoModel = require('../model/todo.model');
 
@@ -10,7 +11,13 @@ const Op = db.Sequelize.Op;
 exports.createTodo = async (req, res, next) => {
   try {
     const createdModel = await TodoModel.create(req.body);
-    res.status(201).json(createdModel);
+    if (createdModel) {
+      io.getIO().emit('post', {
+        action: 'create',
+        post: createdModel
+      });
+      res.status(201).json(createdModel);
+    }
   } catch (err) {
     next(err);
   }
@@ -60,6 +67,7 @@ exports.deleteTodo = async (req, res, next) => {
     });
 
     if (deletedTodo) {
+      io.getIO().emit('post', { action: 'delete', post: deletedTodo });
       res.status(200).json(deletedTodo);
     } else {
       res.status(404).send();

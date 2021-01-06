@@ -24,6 +24,7 @@
     "mysql2": "^2.2.5",
     "node-mocks-http": "^1.7.6",
     "sequelize": "^6.3.5",
+    "socket.io": "^3.0.4",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {

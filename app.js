@@ -5,6 +5,8 @@ const morgan = require(`morgan`);
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const path = require('path');
+const http = require('http');
+const socketio = require('socket.io');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const cors = require('cors');
@@ -13,11 +15,18 @@ const todoRoutes = require('./routes/todo.routes');
 const mysql = require('./model');
 const errorHandler = require(`./middleware/error`);
 dotenv.config({ path: './config/config.env' });
+const { getTodos } = require('./controllers/todo.controller');
 const app = express();
-
+const server = http.createServer(app);
+// const http = require('http').createServer(app);
 // mysql.sequelize.sync({ force: true }).then(() => {
 //   console.log('Drop and re-sync db.');
 // });
+// const server = http.createServer(app);
+
+// const io = socketio(server).sockets;
+const sio = require('./middleware/socket').init(server);
+
 mysql.sequelize.sync();
 app.use(express.json());
 app.use(bodyParser.json());
@@ -59,6 +68,20 @@ app.use((error, req, res, next) => {
 app.get('/', (req, res) => {
   res.json('Hello world!');
 });
+// Middleware
+// require('./middleware/socket')(io);
 
 app.use(errorHandler);
-module.exports = app;
+// module.exports = app;
+
+sio.on('connection', socket => {
+  console.log('Connected!');
+  socket.emit('connection', null);
+  socket.on('initial_data', () => {
+    // collection_foodItems.find({}).then(docs => {
+    // sio.sockets.emit('get_data', getTodos);
+    // });
+  });
+});
+
+server.listen(5000);
